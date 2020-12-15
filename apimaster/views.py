@@ -26,14 +26,14 @@ def createPizza(request):
         allowed_size = []
         for i in p_size:
             allowed_size.append(i.sizeOfPizza)
-        print(allowed_size)
+        allowed_types = ['Regular ','Square']
         #############################################
         pizzaData = JSONParser().parse(request)
         pizza_serializer = PizzaModelSerializer(data = pizzaData)
         
         if pizza_serializer.is_valid():
             
-            if pizza_serializer.validated_data['typeOfPizza'] == 'Regular' or pizza_serializer.validated_data['typeOfPizza'] == 'Square'  :
+            if pizza_serializer.validated_data['typeOfPizza'] in allowed_types  :
                 if pizza_serializer.validated_data['sizeOfPizza'] in allowed_size:
                     pizza_serializer.save()
                     return JsonResponse(pizza_serializer.data, status=status.HTTP_201_CREATED) 
@@ -46,7 +46,9 @@ def createPizza(request):
         return JsonResponse(pizza_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return 
     else:
-        return JsonResponse({'message': 'The pizza does not exist'}, status=status.HTTP_404_NOT_FOUND) 
+        pizza = pizzaModel.objects.all()
+        pizza_serializer =PizzaModelSerializer(pizza,many= True)
+        return JsonResponse(pizza_serializer.data,safe=False) 
 
 @api_view(['GET'])
 def listPizza(request):
